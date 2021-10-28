@@ -5,22 +5,18 @@ import "testing"
 func TestMain(t *testing.T) {
 	testset := []struct {
 		name  string
-		input string
+		input []int
 		want  bool
 	}{
-		{name: "base case", input: "aba", want: true},
-		{name: "base case", input: "notapalindrome", want: false},
-		{name: "base case", input: "aaa", want: true},
-		{name: "base case", input: "aaba", want: false},
-		{name: "base case", input: "aaaa", want: true},
-		{name: "string conversion", input: "Aaaa", want: true},
-		{name: "strip space", input: "Aaa a", want: true},
-		{name: "strip symbols", input: "a$#@Aaaa", want: true},
-		{name: "leaves numbers", input: "1$#@Aaa1", want: true},
-		{name: "leaves numbers", input: "0p", want: false},
+		{name: "base case", input: []int{1, 2, 3, 1}, want: true},
+		{name: "base case", input: []int{1, 2, 3}, want: false},
+		{name: "one element case", input: []int{1}, want: false},
+		{name: "negative element false case", input: []int{-1, -2}, want: false},
+		{name: "negative element true case", input: []int{-1, -2, -1}, want: true},
+		{name: "negative & positive element opposite case", input: []int{-1, -2, 1}, want: false},
 	}
 
-	checkAnswer := func(t testing.TB, input string, want bool) {
+	checkAnswer := func(t testing.TB, input []int, want bool) {
 		t.Helper()
 		got := driver(input)
 		if want != got {
