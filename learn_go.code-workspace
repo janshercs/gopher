@@ -1,0 +1,55 @@
+{
+    "folders": [
+        {
+            "path": "maps"
+        },
+        {
+            "path": "arrs"
+        },
+        {
+            "path": "classes"
+        },
+        {
+            "path": "ints"
+        },
+        {
+            "path": "iterations"
+        },
+        {
+            "path": "pointers"
+        },
+        {
+            "path": "strings"
+        },
+        {
+            "path": "inversion"
+        },
+        {
+            "path": "countdown"
+        },
+        {
+            "path": "concurrent"
+        },
+        {
+            "path": "select"
+        },
+        {
+            "path": "leetcode"
+        },
+        {
+            "path": "reflection"
+        },
+        {
+            "path": "sync"
+        },
+        {
+            "path": "context"
+        },
+        {
+            "path": "roman"
+        },
+        {
+            "path": "clock"
+        }
+    ]
+}
