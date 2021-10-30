@@ -13,3 +13,7 @@ Go playground and scripts while learning Go.
 * Dealing with > 1 types of inputs in a function, refer to [reflection](./reflection)
 * Dealing with HTTP requests the Go way [with HTTP Context](./context)
 * Quick local leetcode testing in [leetcode](./leetcode) folder
+
+## Handy references
+
+* string formats "%s" etc; [here](https://zetcode.com/golang/string-format/)
