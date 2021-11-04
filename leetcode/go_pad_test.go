@@ -1,26 +1,43 @@
 package main
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestMain(t *testing.T) {
 	testset := []struct {
 		name  string
-		input []int
-		want  bool
+		input [][]byte
+		want  int
 	}{
-		{name: "base case", input: []int{1, 2, 3, 1}, want: true},
-		{name: "base case", input: []int{1, 2, 3}, want: false},
-		{name: "one element case", input: []int{1}, want: false},
-		{name: "negative element false case", input: []int{-1, -2}, want: false},
-		{name: "negative element true case", input: []int{-1, -2, -1}, want: true},
-		{name: "negative & positive element opposite case", input: []int{-1, -2, 1}, want: false},
+		{name: "base case", input: [][]byte{
+			{'1', '1', '1', '1', '0'},
+			{'1', '1', '0', '1', '0'},
+			{'1', '1', '0', '0', '0'},
+			{'0', '0', '0', '0', '0'},
+		}, want: 1},
+		{name: "base case", input: [][]byte{
+			{'1', '1', '0', '0', '0'},
+			{'1', '1', '0', '0', '0'},
+			{'0', '0', '1', '0', '0'},
+			{'0', '0', '0', '1', '1'},
+		}, want: 3},
+		{name: "1 col", input: [][]byte{
+			{'1'},
+			{'1'},
+			{'0'},
+			{'0'},
+		}, want: 1},
+		{name: "1 row", input: [][]byte{
+			{'1', '1', '0', '0', '1'},
+		}, want: 2},
 	}
 
-	checkAnswer := func(t testing.TB, input []int, want bool) {
+	checkAnswer := func(t testing.TB, input [][]byte, want int) {
 		t.Helper()
 		got := driver(input)
-		if want != got {
-			t.Errorf("test failed, wanted %v got %v", want, got)
+		if got != want {
+			t.Errorf("test failed, wanted %d got %d", want, got)
 		}
 	}
 
