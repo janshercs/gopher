@@ -53,6 +53,9 @@
         },
         {
             "path": "blogposts"
+        },
+        {
+            "path": "server"
         }
     ]
 }

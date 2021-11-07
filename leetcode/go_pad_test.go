@@ -7,33 +7,26 @@ import (
 func TestMain(t *testing.T) {
 	testset := []struct {
 		name  string
-		input [][]byte
+		input [][]int
 		want  int
 	}{
-		{name: "base case", input: [][]byte{
-			{'1', '1', '1', '1', '0'},
-			{'1', '1', '0', '1', '0'},
-			{'1', '1', '0', '0', '0'},
-			{'0', '0', '0', '0', '0'},
-		}, want: 1},
-		{name: "base case", input: [][]byte{
-			{'1', '1', '0', '0', '0'},
-			{'1', '1', '0', '0', '0'},
-			{'0', '0', '1', '0', '0'},
-			{'0', '0', '0', '1', '1'},
-		}, want: 3},
-		{name: "1 col", input: [][]byte{
-			{'1'},
-			{'1'},
-			{'0'},
-			{'0'},
-		}, want: 1},
-		{name: "1 row", input: [][]byte{
-			{'1', '1', '0', '0', '1'},
-		}, want: 2},
+		{name: "base case",
+			input: [][]int{
+				{1, 5, 3},
+				{1, 5, 1},
+				{6, 6, 5},
+			},
+			want: 8},
+		{name: "base case",
+			input: [][]int{
+				{1, 3, 2},
+				{1, 5, 2},
+				{2, 4, 5},
+			},
+			want: 5},
 	}
 
-	checkAnswer := func(t testing.TB, input [][]byte, want int) {
+	checkAnswer := func(t testing.TB, input [][]int, want int) {
 		t.Helper()
 		got := driver(input)
 		if got != want {
