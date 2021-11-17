@@ -1,9 +1,10 @@
-package poker_test
+package poker
 
 import (
 	"bytes"
 	"fmt"
-	"poker"
+	"io"
+	"io/ioutil"
 	"strings"
 	"testing"
 	"time"
@@ -11,7 +12,7 @@ import (
 
 var (
 	dummyBlindAlerter = &spyBlindAlerter{}
-	dummyPlayerStore  = &poker.StubPlayerStore{}
+	dummyPlayerStore  = &StubPlayerStore{}
 	dummyStdIn        = &bytes.Buffer{}
 	dummyStdOut       = &bytes.Buffer{}
 )
@@ -20,9 +21,9 @@ func TestGameStart(t *testing.T) {
 	t.Run("schedules printing of blind alerts for 5 players", func(t *testing.T) {
 		blindAlerter := &spyBlindAlerter{}
 
-		game := poker.NewTexasHoldem(blindAlerter, dummyPlayerStore)
+		game := NewTexasHoldem(blindAlerter, dummyPlayerStore)
 
-		cases := []poker.ScheduledAlert{
+		cases := []ScheduledAlert{
 			{At: 0 * time.Second, Amount: 100},
 			{At: 10 * time.Minute, Amount: 200},
 			{At: 20 * time.Minute, Amount: 300},
@@ -36,7 +37,7 @@ func TestGameStart(t *testing.T) {
 			{At: 100 * time.Minute, Amount: 8000},
 		}
 
-		game.Start(5)
+		game.Start(5, ioutil.Discard)
 
 		if len(blindAlerter.alerts) == 0 {
 			t.Fatal("no blind alerts were scheduled.")
@@ -47,10 +48,10 @@ func TestGameStart(t *testing.T) {
 
 	t.Run("schedules printing of blind alerts for 7 players", func(t *testing.T) {
 		blindAlerter := &spyBlindAlerter{}
-		game := poker.NewTexasHoldem(blindAlerter, dummyPlayerStore)
-		game.Start(7)
+		game := NewTexasHoldem(blindAlerter, dummyPlayerStore)
+		game.Start(7, ioutil.Discard)
 
-		cases := []poker.ScheduledAlert{
+		cases := []ScheduledAlert{
 			{At: 0 * time.Second, Amount: 100},
 			{At: 12 * time.Minute, Amount: 200},
 			{At: 24 * time.Minute, Amount: 300},
@@ -69,13 +70,13 @@ func TestGameStarts(t *testing.T) {
 	t.Run("prints out and reads first player prompt", func(t *testing.T) {
 		stdout := &bytes.Buffer{}
 		in := strings.NewReader("7\n")
-		game := &spyGame{}
+		game := &SpyGame{}
 
-		cli := poker.NewCLI(in, stdout, game)
+		cli := NewCLI(in, stdout, game)
 		cli.PlayPoker()
 
 		got := stdout.String()
-		want := poker.PlayerPrompt
+		want := PlayerPrompt
 
 		if got != want {
 			t.Errorf("got %q, want %q", got, want)
@@ -91,12 +92,12 @@ func TestGameStarts(t *testing.T) {
 
 func TestGameFinish(t *testing.T) {
 	t.Run("record chris win from user input", func(t *testing.T) {
-		playerStore := &poker.StubPlayerStore{}
-		game := poker.NewTexasHoldem(dummyBlindAlerter, playerStore)
+		playerStore := &StubPlayerStore{}
+		game := NewTexasHoldem(dummyBlindAlerter, playerStore)
 
 		game.Finish("Chris")
 
-		poker.AssertPlayerWin(t, playerStore, "Chris")
+		AssertPlayerWin(t, playerStore, "Chris")
 	})
 }
 
@@ -104,44 +105,47 @@ func TestGameDoesNotStartWithInvalidInput(t *testing.T) {
 	t.Run("it prints error when non numeric value entered and does not start game", func(t *testing.T) {
 		stdout := &bytes.Buffer{}
 		in := strings.NewReader("Pies\n")
-		game := &spyGame{}
+		game := &SpyGame{}
 
-		cli := poker.NewCLI(in, stdout, game)
+		cli := NewCLI(in, stdout, game)
 		cli.PlayPoker()
 
 		if game.StartCalled {
 			t.Errorf("game should not have started")
 		}
 
-		assertMessagesSentToUser(t, stdout, poker.PlayerPrompt, poker.BadInputErrMsg)
+		AssertMessagesSentToUser(t, stdout, PlayerPrompt, BadInputErrMsg)
 
 	})
 }
 
 type spyBlindAlerter struct {
-	alerts []poker.ScheduledAlert
+	alerts []ScheduledAlert
 }
 
-func (s *spyBlindAlerter) ScheduleAlertAt(at time.Duration, amount int) {
-	s.alerts = append(s.alerts, poker.ScheduledAlert{at, amount})
+func (s *spyBlindAlerter) ScheduleAlertAt(at time.Duration, amount int, out io.Writer) {
+	s.alerts = append(s.alerts, ScheduledAlert{at, amount})
 }
 
-type spyGame struct {
-	StartedWith  int
-	StartCalled  bool
-	FinishedWith string
+type SpyGame struct {
+	StartedWith    int
+	StartCalled    bool
+	BlindAlert     []byte
+	FinishedWith   string
+	FinishedCalled bool
 }
 
-func (g *spyGame) Start(numberOfPlayers int) {
+func (g *SpyGame) Start(numberOfPlayers int, out io.Writer) {
 	g.StartedWith = numberOfPlayers
 	g.StartCalled = true
+	out.Write(g.BlindAlert)
 }
 
-func (g *spyGame) Finish(winner string) {
+func (g *SpyGame) Finish(winner string) {
 	g.FinishedWith = winner
 }
 
-func assertScheduledAlert(t testing.TB, got, want poker.ScheduledAlert) {
+func assertScheduledAlert(t testing.TB, got, want ScheduledAlert) {
 	t.Helper()
 	amountGot := got.Amount
 	if amountGot != want.Amount {
@@ -154,7 +158,7 @@ func assertScheduledAlert(t testing.TB, got, want poker.ScheduledAlert) {
 	}
 }
 
-func checkSchedulingCases(t *testing.T, cases []poker.ScheduledAlert, blindAlerter *spyBlindAlerter) {
+func checkSchedulingCases(t *testing.T, cases []ScheduledAlert, blindAlerter *spyBlindAlerter) {
 	t.Helper()
 	for i, want := range cases {
 		t.Run(fmt.Sprint(want), func(t *testing.T) {
@@ -169,7 +173,7 @@ func checkSchedulingCases(t *testing.T, cases []poker.ScheduledAlert, blindAlert
 	}
 }
 
-func assertMessagesSentToUser(t testing.TB, stdout *bytes.Buffer, messages ...string) {
+func AssertMessagesSentToUser(t testing.TB, stdout *bytes.Buffer, messages ...string) {
 	t.Helper()
 	want := strings.Join(messages, "")
 	got := stdout.String()
@@ -179,16 +183,25 @@ func assertMessagesSentToUser(t testing.TB, stdout *bytes.Buffer, messages ...st
 	}
 }
 
-func assertGameStartedWith(t testing.TB, game *spyGame, n int) {
+func AssertGameStartedWith(t testing.TB, game *SpyGame, n int) {
 	t.Helper()
-	if game.StartedWith != n {
-		t.Errorf("wanted Start called with %d but got %d", n, game.StartedWith)
+
+	passed := retryUntil(50*time.Millisecond, func() bool {
+		return game.StartedWith == n
+	})
+
+	if !passed {
+		t.Errorf("start called with %d but got %d", n, game.StartedWith)
 	}
 }
 
-func assertFinishCalledWith(t testing.TB, game *spyGame, name string) {
+func AssertFinishCalledWith(t testing.TB, game *SpyGame, name string) {
 	t.Helper()
-	if game.FinishedWith != name {
-		t.Errorf("wanted Finish called with %q but got %q", name, game.FinishedWith)
+	passed := retryUntil(50*time.Millisecond, func() bool {
+		return game.FinishedWith == name
+	})
+
+	if !passed {
+		t.Errorf("finish called with %q but got %q", name, game.FinishedWith)
 	}
 }
