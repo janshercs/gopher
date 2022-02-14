@@ -1,66 +1,50 @@
 package main
 
-func driver(input LCInput) []int {
-	return searchRange(input.arr, input.target)
+type LCInput [][]int
+
+func driver(input LCInput) int {
+	return minimumTotal(input)
 }
 
-func searchRange(nums []int, target int) []int {
-	left, exists := findLeftIfExist(nums, target)
+const MAXINT = 100000 // because LC doesn't have the math package. else I'd use math.MaxInt
 
-	if !exists {
-		return []int{-1, -1}
-	}
-	right := findRight(nums, target)
-	return []int{left, right}
-}
-
-func findLeftIfExist(nums []int, target int) (int, bool) {
-	i := 0
-	j := len(nums) - 1
-	var m int
-
-	for i <= j {
-		m = (i + j) / 2
-		switch {
-		case nums[m] == target && isLeft(m, nums):
-			return m, true
-		case nums[m] > target || (nums[m] == target && nums[m-1] == target):
-			j = m - 1
-		case nums[m] < target:
-			i = m + 1
+func minimumTotal(triangle [][]int) int {
+	dp := newDP(triangle)
+	dp[0][0] = triangle[0][0]
+	for i := 1; i < len(triangle); i++ {
+		for j := range triangle[i] {
+			dp[i][j] = triangle[i][j] + minInt(getPrevious(dp, i, j))
 		}
 	}
-	return -1, false
+
+	return minInt(dp[len(triangle)-1]...)
 }
 
-func findRight(nums []int, target int) int {
-	i := 0
-	j := len(nums) - 1
-	var m int
-
-	for i <= j {
-		m = (i + j) / 2
-		switch {
-		case nums[m] == target && isRight(m, nums):
-			return m
-		case nums[m] > target:
-			j = m - 1
-		case nums[m] < target || (nums[m] == target && nums[m+1] == target):
-			i = m + 1
+func minInt(nums ...int) int {
+	min := MAXINT
+	for _, n := range nums {
+		if n < min {
+			min = n
 		}
 	}
-	return m
+	return min
 }
 
-func isRight(m int, nums []int) bool {
-	return m == len(nums)-1 || nums[m+1] != nums[m]
+func newDP(input [][]int) [][]int {
+	dp := make([][]int, len(input))
+	for i := range dp {
+		dp[i] = make([]int, i+1)
+	}
+	return dp
 }
 
-func isLeft(m int, nums []int) bool {
-	return m == 0 || nums[m-1] != nums[m]
-}
-
-type LCInput struct {
-	arr    []int
-	target int
+func getPrevious(input [][]int, i, j int) (int, int) {
+	switch {
+	case j == 0:
+		return input[i-1][j], MAXINT
+	case j == i:
+		return input[i-1][j-1], MAXINT
+	default:
+		return input[i-1][j], input[i-1][j-1]
+	}
 }

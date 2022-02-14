@@ -1,0 +1,26 @@
+syntax = "proto3";
+option go_package = "./hello";
+
+service Greet {
+  rpc SayHello(HelloRequest) returns (HelloResponse);
+}
+
+message HelloRequest {
+  string name = 1;
+}
+
+message HelloResponse {
+  string greeting = 1;
+}
+
+service Todo {
+  rpc makeTodo(TodoItem) returns (TodoItem);
+  rpc getTodos(Empty) returns (stream TodoItem);
+}
+
+message TodoItem {
+  int32 id = 1;
+  string item = 2;
+}
+
+message Empty{}

@@ -56,6 +56,9 @@
         },
         {
             "path": "server"
+        },
+        {
+            "path": "quiz"
         }
     ]
 }
