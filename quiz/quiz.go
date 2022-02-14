@@ -4,6 +4,7 @@ import (
 	"encoding/csv"
 	"fmt"
 	"os"
+	"time"
 )
 
 type InvalidInputError struct {
@@ -51,13 +52,27 @@ func GetQuestionsFromStrings(input [][]string) ([]Question, error) {
 
 func Start(questions []Question) {
 	score := 0
+	timeLimit := 2 * time.Second
+	timer := time.After(timeLimit) // returns a channel
+problemLoop:
 	for i, question := range questions {
+		answerCh := make(chan string)
+		go func() {
+			var answer string
+			fmt.Scanf("%s\n", &answer)
+			answerCh <- answer
+		}()
 		fmt.Printf("Question #%d: %s = ", i+1, question.Q)
-		var answer string
-		fmt.Scanf("%s\n", &answer)
-		if answer == question.A {
+		select {
+		case answer := <-answerCh:
+			if answer != question.A {
+				continue
+			}
 			score++
+		case <-timer:
+			break problemLoop
 		}
+
 	}
 	fmt.Printf("You got %d answers correct \n", score)
 }
